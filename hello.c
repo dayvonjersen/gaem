@@ -11,6 +11,7 @@ void write_string(char *str) {
 }
 
 int main(void) {
+    int i;
     waitvblank();
 
     *((unsigned char*)0x2006) = 0x3F;
@@ -27,7 +28,14 @@ int main(void) {
     *((unsigned char*)0x2005) = 0x00;
     *((unsigned char*)0x2001) = 0x08;
 
-    for(;;);
+    i = 0;
+    for(;;) {
+        *((unsigned char*)0x2006) = 0x3F;
+        *((unsigned char*)0x2006) = 0x00;
+        *((unsigned char*)0x2007) = i;
+        i++;
+        if (i > 255) i = 0;
+    }
 
     return 0;
 }
