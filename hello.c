@@ -1,18 +1,8 @@
 #include <nes.h>
-#include <stdio.h>
+#include <conio.h>
 
 #define read_addr(pointer) *((unsigned char*)pointer)
 #define write_addr(pointer, value) read_addr(pointer) = value
-
-void write_string(char *str) {
-    write_addr(0x2006, 0x21);
-    write_addr(0x2006, 0x42);
-
-    while(*str != '\0') {
-        write_addr(0x2007, *str);
-        str++;
-    }
-}
 
 unsigned char read_joystick1() {
     unsigned char n = 8, joy_state = 0;
@@ -26,7 +16,6 @@ unsigned char read_joystick1() {
 }
 
 int main(void) {
-    char text[12];
     unsigned char pad, bgcolor;
 
     waitvblank();
@@ -35,12 +24,7 @@ int main(void) {
     write_addr(0x2006, 0x00);
     write_addr(0x2007, COLOR_VIOLET);
 
-    write_addr(0x2006, 0x3F);
-    write_addr(0x2006, 0x03);
-    write_addr(0x2007, 0x30);
-
-    sprintf(text, "push buttan");
-    write_string(text);
+    cprintf(" push buttan");
 
     write_addr(0x2005, 0x00);
     write_addr(0x2005, 0x00);
