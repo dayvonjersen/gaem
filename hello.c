@@ -25,46 +25,31 @@ unsigned char read_joystick1() {
 }
 
 void delay(int i) {
-    while(i--) {
-        waitvblank();
-    }
+    while(i--) waitvblank();
 }
 
-/*
-int main(void) {
-    char j, k, l, oy;
-    unsigned int i;
-    unsigned char pad, color, x, y;
+void game_over(void) {
     const char s[][33] = {
         " this was a triumph\0", 
         " i'm making a note here\0", 
         " HUGE SUCCESS\0",
         "it's hard to overstate my satis-\0"}; 
-    waitvblank();
+    char j, k, l, oy;
+    unsigned char key, x, y;
+
     screensize(&x,&y);
-
-    bgcolor(COLOR_VIOLET);
-    textcolor(COLOR_WHITE);
-
     clrscr();
+    bgcolor(COLOR_CYAN);
 
     j = y - 4;
-    oy = j;
-
-    cprintf(" push buttan\r\n");
-
-    for(i = 0; i < 256; i++) {
-        cprintf("%c", (char)i);
-        if((i % 30)==0) {
-            cprintf("\r\n");
-        }
-    }
-
-    write_addr(0x2005, 0x00);
-    write_addr(0x2005, 0x00);
-    write_addr(0x2001, 0x08);
+    oy = j;    
     for(;;) {
-        delay(50);
+        key = read_joystick1();
+        if(key & BUTTON_START) {
+            break;
+        }
+
+        clrscr();
         for(k = 0; k < 4; k++) {
             gotoxy(0, oy + k);
             for(l = 0; l < x; l++) {
@@ -78,59 +63,83 @@ int main(void) {
             gotoxy(0, j + k);
             cputs(s[k]);
         }
-        oy = j;
-        pad = read_joystick1();
-        if(pad == BUTTON_UP) {
-            color = COLOR_RED;
-        } else if(pad == BUTTON_DOWN) {
-            color = COLOR_WHITE;
-        } else if(pad == BUTTON_LEFT) {
-            color = COLOR_GRAY1;
-        } else if(pad == BUTTON_RIGHT) {
-            color = COLOR_GREEN;
-        } else {
-            color = 0;
-        }
-        if(color) {
-            write_addr(0x2006, 0x3F);
-            write_addr(0x2006, 0x00);
-            write_addr(0x2007, color);
+        delay(50);
+    }
+}
+
+struct meme {
+    int x, y;
+};
+
+const struct meme faec[14] = {
+    {7,10},
+    {7,18},
+    {12,14},
+    {16,14},
+    {19,18},
+    {21,17},
+    {22,16},
+    {23,13},
+    {23,14},
+    {23,15},
+    {19,10},
+    {21,11},
+    {22,12}
+};
+
+void memefaec(void) {
+    short i;
+    for(i = 0; i < 14; i++) {
+        if(faec[i].x) {
+            gotoxy(faec[i].x,faec[i].y);
+            cprintf(":^)");
         }
     }
+}
 
-    return 0;
-}*/
-
-#define presskey(k) key & k
 void main(void) {
     unsigned char key;
-    unsigned char x=0,y=0,oldx=0,oldy=0;
-//    unsigned char x2=0,y2=0,oldx2=0,oldy2=0;   
-    cprintf("waiting for press joystick....",);
-    while(1){   
-        key=read_joystick1();
-        if(presskey(BUTTON_UP))--y;
-        if(presskey(BUTTON_DOWN))++y;
-        if(presskey(BUTTON_LEFT))--x;
-        if(presskey(BUTTON_RIGHT))++x;
-/*        key=read_joystick();      
-        if(presskey(BUTTON_UP))--y2;
-        if(presskey(BUTTON_DOWN))++y2;
-        if(presskey(BUTTON_LEFT))--x2;
-        if(presskey(BUTTON_RIGHT))++x2;     */
-        if(x!=oldx || y!=oldy /*|| x2!=oldx2 || y2!=oldy2*/){   
-            clrscr();   
+    unsigned char x, y, oldx, oldy;
+start:
+    x = 14; y = 12; oldx = 0; oldy = 0;
+
+    bgcolor(COLOR_BLACK);
+    textcolor(COLOR_WHITE);
+
+    waitvblank();
+    memefaec();
+
+    for(;;) {   
+        key = read_joystick1();
+        if(key & BUTTON_UP)    y--;
+        if(key & BUTTON_DOWN)  y++;
+        if(key & BUTTON_LEFT)  x--;
+        if(key & BUTTON_RIGHT) x++;
+
+        if(y > 27) {
+            if(oldy < 26) y = 0;
+            else y = 27;
+        }
+        if(x > 29) {
+            if(oldx < 28) x = 0;
+            else x = 29;
+        }
+
+        if(x != oldx || y != oldy) {   
+            clrscr();
+            memefaec();
             gotoxy(1,1);
-            cprintf("x=%u y=%u "/*"x=%u y=%u"*/,x,y/*,x2,y2*/);   
+            cprintf("x=%u y=%u", x, y);   
             gotoxy(x,y);    
-            cprintf("A");   
-/*            gotoxy(x2,y2);
-            cprintf("B");*/
-            oldx=x;
-            oldy=y;
-/*            oldx2=x2;
-            oldy2=y2;*/
+            cprintf(":^)");   
+            oldx = x;
+            oldy = y;
             delay(10);
+
+            if(x == 20 && y == 21) {
+                game_over();
+                goto start;
+            }
         }
     }
 }
