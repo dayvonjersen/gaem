@@ -97,9 +97,12 @@ void memefaec(void) {
     }
 }
 
+extern unsigned char foo[100];
+
 void main(void) {
     unsigned char key;
     unsigned char x, y, oldx, oldy;
+    int i;
 start:
     x = 14; y = 12; oldx = 0; oldy = 0;
 
@@ -107,6 +110,18 @@ start:
     textcolor(COLOR_WHITE);
 
     waitvblank();
+
+    // XXX
+//    write_addr(0x2006, 0x21);
+//    write_addr(0x2006, 0x42);
+    for(i = 0; i < sizeof(foo); i++) {
+      //  write_addr(0x2007, foo[i]);
+      gotoxy(i, 0);
+      cprintf("%u", foo[i]);
+    }
+    while(1);
+    // XXX
+
     memefaec();
 
     for(;;) {   
